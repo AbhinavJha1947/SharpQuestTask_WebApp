@@ -1,39 +1,68 @@
-# SharpQuestTask_WebApp
-Employee Management Web Application (ASP.NET Core MVC + SQL Server + ADO.NET)
-Database Setup
-Open SQL Server Management Studio (SSMS)
-Run the script located at:
-/Database/CreateEmployeeDb.sql
-This:
-Creates the database
-Creates tables
-Inserts 100 employees
-Inserts salary rows
+Employee Management Web Application
 
-Update connection string in appsettings.json:
+Tech Stack: ASP.NET Core MVC · SQL Server · ADO.NET (No Entity Framework)
+
+📌 Database Setup
+
+Open SQL Server Management Studio (SSMS)
+
+Run the script located at:
+
+/Database/CreateEmployeeDb.sql
+
+
+This script will:
+
+Create the database
+
+Create required tables
+
+Insert 100 employees
+
+Insert salary rows
+
+Update the connection string in appsettings.json:
+
 "ConnectionStrings": {
   "DefaultConnection": "Server=YOUR_SERVER;Database=EmployeeDemoDB;Trusted_Connection=True;"
 }
-Run the project:
+
+▶️ Running the Project
 dotnet restore
 dotnet build
 dotnet run
 
-Features Implemented
-1. Employee List
+✨ Features Implemented
+Employee List
+
 Search by name
+
 Search by title
+
 Displays:
+
 Full name
+
 Current title
+
 Current salary
+
 Contact details
+
 Join date
+
 Age
-2. Title List
+
+Title List
+
 Shows all distinct titles
-Shows minimum and maximum salary for each title
-3. Add Employee
-Add employee basic details
-Add initial salary and title
+
+Shows minimum & maximum salary
+
+Add Employee
+
+Add employee details
+
+Add initial title and salary
+
 Salary stored in EmployeeSalary table
