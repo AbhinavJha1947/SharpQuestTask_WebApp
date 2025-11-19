@@ -1,0 +1,30 @@
+﻿@model IEnumerable<ManageEmployee.Models.TitleStat>
+@{
+    ViewData["Title"] = "Titles";
+}
+<h2>Title List (Min / Max Salary)</h2>
+
+<p>
+    <a asp-action="Index" class="btn btn-secondary">Back to Employees</a>
+    <a asp-action="Add" class="btn btn-success">Add Employee</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Min Salary</th>
+            <th>Max Salary</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td>@t.Title</td>
+                <td>@t.MinSalary.ToString("C0")</td>
+                <td>@t.MaxSalary.ToString("C0")</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<ManageEmployee.Models.Employee>
+@{
+    ViewData["Title"] = "Employees";
+}
+<h2>Employee List</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="text" name="name" value="@ViewBag.Name" class="form-control" placeholder="Search by name..." />
+    </div>
+    <div class="col-md-4">
+        <input type="text" name="title" value="@ViewBag.TitleFilter" class="form-control" placeholder="Search by title..." />
+    </div>
+    <div class="col-md-4">
+        <button class="btn btn-primary">Search</button>
+        <a asp-action="Index" class="btn btn-secondary">Clear</a>
+        <a asp-action="Add" class="btn btn-success">Add Employee</a>
+        <a asp-action="Titles" class="btn btn-info">Title List</a>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Title</th>
+            <th>Salary</th>
+            <th>City</th>
+            <th>Phone</th>
+            <th>Join Date</th>
+            <th>Age</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var e in Model)
+        {
+            <tr>
+                <td>@e.EmployeeId</td>
+                <td>@e.FullName <div class="text-muted small">SSN: @e.SSN</div></td>
+                <td>@(e.CurrentTitle ?? "-")</td>
+                <td>@(e.CurrentSalary.HasValue? e.CurrentSalary.Value.ToString("C0") : "-")</td>
+                <td>@e.City</td>
+                <td>@e.Phone</td>
+                <td>@e.JoinDate.ToShortDateString()</td>
+                <td>@( (int)((DateTime.Now - e.DOB).TotalDays / 365.25) )</td>
+            </tr>
+        }
+    </tbody>
+</table>
