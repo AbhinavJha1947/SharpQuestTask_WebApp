@@ -1,0 +1,143 @@
+SET NOCOUNT ON;
+
+---------------------------------------------------
+-- CREATE DB
+---------------------------------------------------
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'EmployeeDemoDB')
+BEGIN
+    CREATE DATABASE EmployeeDemoDB;
+END
+GO
+
+USE EmployeeDemoDB;
+GO
+
+---------------------------------------------------
+-- DROP TABLES
+---------------------------------------------------
+IF OBJECT_ID('dbo.EmployeeSalary') IS NOT NULL DROP TABLE dbo.EmployeeSalary;
+IF OBJECT_ID('dbo.Employee') IS NOT NULL DROP TABLE dbo.Employee;
+---------------------------------------------------
+
+-- *** FROM HERE ON: NO MORE GO UNTIL THE END ***
+---------------------------------------------------
+-- CREATE TABLES
+---------------------------------------------------
+CREATE TABLE dbo.Employee (
+    EmployeeId INT IDENTITY(1,1) PRIMARY KEY,
+    FirstName NVARCHAR(100) NOT NULL,
+    LastName NVARCHAR(100) NOT NULL,
+    SSN NVARCHAR(20) NOT NULL UNIQUE,
+    DOB DATE NOT NULL,
+    Address NVARCHAR(250),
+    City NVARCHAR(100),
+    State NVARCHAR(50),
+    Zip NVARCHAR(20),
+    Phone NVARCHAR(50),
+    JoinDate DATE NOT NULL,
+    ExitDate DATE NULL
+);
+
+CREATE TABLE dbo.EmployeeSalary (
+    SalaryId INT IDENTITY(1,1) PRIMARY KEY,
+    EmployeeId INT NOT NULL,
+    FromDate DATE NOT NULL,
+    ToDate DATE NULL,
+    Title NVARCHAR(150) NOT NULL,
+    Salary DECIMAL(18,2) NOT NULL,
+    FOREIGN KEY (EmployeeId) REFERENCES dbo.Employee(EmployeeId)
+);
+
+---------------------------------------------------
+-- TABLE VARIABLES (IMPORTANT: SAME BATCH)
+---------------------------------------------------
+DECLARE @FirstNames TABLE (Name NVARCHAR(100));
+INSERT INTO @FirstNames VALUES
+('James'),('Mary'),('John'),('Patricia'),('Robert'),('Jennifer'),
+('Michael'),('Linda'),('William'),('Elizabeth'),('David'),('Barbara'),
+('Richard'),('Susan'),('Joseph'),('Jessica');
+
+DECLARE @LastNames TABLE (Name NVARCHAR(100));
+INSERT INTO @LastNames VALUES
+('Smith'),('Johnson'),('Williams'),('Brown'),('Jones'),('Garcia'),
+('Miller'),('Davis'),('Rodriguez'),('Martinez'),('Wilson'),
+('Anderson'),('Taylor'),('Thomas'),('Lee'),('Perez');
+
+DECLARE @Titles TABLE (Title NVARCHAR(150));
+INSERT INTO @Titles VALUES
+('Junior Developer'),('Developer'),('Senior Developer'),('Lead Developer'),
+('QA Engineer'),('Senior QA Engineer'),('DevOps Engineer'),('Product Manager'),
+('Business Analyst'),('Technical Architect'),('HR Executive'),('UI/UX Designer'),
+('Database Administrator'),('Support Engineer'),('IT Manager'),('Data Scientist');
+
+---------------------------------------------------
+-- INSERT 100 EMPLOYEES
+---------------------------------------------------
+DECLARE @i INT = 1;
+DECLARE @fnCount INT = (SELECT COUNT(*) FROM @FirstNames);
+DECLARE @lnCount INT = (SELECT COUNT(*) FROM @LastNames);
+
+WHILE @i <= 100
+BEGIN
+    DECLARE @fn NVARCHAR(100) =
+    (SELECT TOP 1 Name FROM (
+        SELECT ROW_NUMBER() OVER (ORDER BY Name) rn, Name FROM @FirstNames
+    ) x WHERE rn = ((@i - 1) % @fnCount) + 1);
+
+    DECLARE @ln NVARCHAR(100) =
+    (SELECT TOP 1 Name FROM (
+        SELECT ROW_NUMBER() OVER (ORDER BY Name) rn, Name FROM @LastNames
+    ) x WHERE rn = ((@i - 1) % @lnCount) + 1);
+
+    DECLARE @ssn NVARCHAR(20) = RIGHT('000000000' + CAST(100000000 + @i AS VARCHAR(9)), 9);
+
+    INSERT INTO dbo.Employee
+    (FirstName, LastName, SSN, DOB, Address, City, State, Zip, Phone, JoinDate)
+    VALUES
+    (
+        @fn,
+        @ln,
+        @ssn,
+        DATEADD(year, -(22 + (@i % 40)), GETDATE()),
+        CONCAT((ABS(CHECKSUM(NEWID())) % 9999) + 1, ' Main St'),
+        'New York',
+        'NY',
+        '10001',
+        CONCAT('+1-', (5550000 + @i)),
+        DATEADD(day, -(@i * 5), GETDATE())
+    );
+
+    SET @i += 1;
+END
+
+---------------------------------------------------
+-- INSERT SALARIES
+---------------------------------------------------
+DECLARE @titleCount INT = (SELECT COUNT(*) FROM @Titles);
+
+INSERT INTO dbo.EmployeeSalary (EmployeeId, FromDate, ToDate, Title, Salary)
+SELECT 
+    e.EmployeeId,
+    e.JoinDate,
+    NULL,
+    t.Title,
+    CASE 
+        WHEN t.Title LIKE '%Junior%' THEN 42000 + (ABS(CHECKSUM(NEWID())) % 8000)
+        WHEN t.Title LIKE '%Senior%' THEN 95000 + (ABS(CHECKSUM(NEWID())) % 15000)
+        WHEN t.Title LIKE '%Lead%' THEN 120000 + (ABS(CHECKSUM(NEWID())) % 20000)
+        WHEN t.Title LIKE '%Manager%' THEN 110000 + (ABS(CHECKSUM(NEWID())) % 25000)
+        ELSE 60000 + (ABS(CHECKSUM(NEWID())) % 15000)
+    END AS Salary
+FROM dbo.Employee e
+CROSS APPLY (
+    SELECT TOP 1 Title FROM (
+        SELECT ROW_NUMBER() OVER (ORDER BY Title) rn, Title FROM @Titles
+    ) x WHERE rn = ((e.EmployeeId - 1) % @titleCount) + 1
+) t;
+
+---------------------------------------------------
+-- CHECK RESULTS
+---------------------------------------------------
+SELECT COUNT(*) AS EmployeeCount FROM dbo.Employee;
+SELECT COUNT(*) AS SalaryCount FROM dbo.EmployeeSalary;
+GO
