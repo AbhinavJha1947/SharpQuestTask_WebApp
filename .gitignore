@@ -6,7 +6,22 @@
 ## has more thorough IDE-specific entries.
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/Dotnet.gitignore
-
+bin/
+obj/
+*.user
+*.suo
+*.log
+*.db
+*.jfm
+*.cache
+.vs/
+publish/
+*.exe
+*.dll
+*.pdb
+*.mdb
+*.cache
+*.config
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
